@@ -1,4 +1,9 @@
-pytest-django
 requests
 django
+pytest
+pytest-django
 djangorestframework
+djangorestframework-simplejwt
+markdown
+django-cors-headers
+django-filters
