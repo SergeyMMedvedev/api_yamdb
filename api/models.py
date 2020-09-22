@@ -75,5 +75,5 @@ class Comment(models.Model):
                                     auto_now_add=True)
 
 
-class Hello(models.Model):
+class Hello3(models.Model):
     pass
