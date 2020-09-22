@@ -73,3 +73,7 @@ class Comment(models.Model):
                                related_name="comments")
     pub_date = models.DateTimeField('Дата публикации',
                                     auto_now_add=True)
+
+
+class Hello(models.Model):
+    pass
