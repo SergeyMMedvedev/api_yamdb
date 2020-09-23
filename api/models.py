@@ -19,8 +19,9 @@ class Category(models.Model):
 
 class Title(models.Model):
 
-    name = models.CharField(max_length=140,
-                            verbose_name="Название фильма")
+    name = models.CharField(
+        max_length=140, verbose_name="Название фильма"
+    )
     year = models.IntegerField(
         validators=[MinValueValidator(1984), MaxValueValidator(2030)],
         verbose_name="Год выпуска"
