@@ -1,16 +1,4 @@
-from rest_framework.viewsets import ModelViewSet
-from .models import Review, Title, Genre, Category
-from .serializers import (
-    ReviewSerializer, CommentSerializer,
-    TitlesSerializer, GenreSerializer, CategorySerializer
-)
-from django.shortcuts import get_object_or_404
-from .pagination import NumberPagination
 from django_filters.rest_framework import DjangoFilterBackend
-from .filters import TitleFilter
-
-import json
-
 from django.shortcuts import get_object_or_404
 from django.core.mail import EmailMessage
 from rest_framework import permissions, status, generics
@@ -19,10 +7,14 @@ from rest_framework.views import APIView
 from rest_framework.viewsets import ModelViewSet, ViewSetMixin
 from rest_framework.pagination import PageNumberPagination
 
-from .models import Review, User
+from .pagination import NumberPagination
+from .filters import TitleFilter
+from .models import Review, User, Title, Genre, Category
 from .serializers import (
     ReviewSerializer,
     CommentSerializer,
+    TitlesSerializer,
+    GenreSerializer,
     UserSerializer,
     TokenSerializer,
     MyTokenObtainPairSerializer,
@@ -32,7 +24,6 @@ from .api_tokens import TokenGenerator
 
 
 account_activation_token = TokenGenerator()
-
 
 
 class ReviewViewSet(ModelViewSet):
@@ -59,7 +50,6 @@ class CommentViewSet(ModelViewSet):
     def get_queryset(self):
         review = get_object_or_404(Review, id=self.kwargs['reviews_id'])
         return review.comments.all()
-
 
 
 class TitlesViewSet(ModelViewSet):

@@ -1,9 +1,5 @@
 from django.db import models
 from django.core.validators import MaxValueValidator, MinValueValidator
-##
-from django.contrib.auth import get_user_model
-User = get_user_model()
-##
 from django.contrib.auth.models import AbstractBaseUser, PermissionsMixin
 from django.conf import settings
 
@@ -101,8 +97,7 @@ class Review(models.Model):
                               on_delete=models.CASCADE,
                               related_name="reviews")
     text = models.TextField()
-    #author = models.ForeignKey(settings.AUTH_USER_MODEL,
-    author = models.ForeignKey(User,
+    author = models.ForeignKey(settings.AUTH_USER_MODEL,
                                on_delete=models.CASCADE,
                                related_name="reviews")
     score = models.IntegerField(
@@ -117,8 +112,7 @@ class Comment(models.Model):
                                on_delete=models.CASCADE,
                                related_name="comments")
     text = models.TextField()
-    #author = models.ForeignKey(settings.AUTH_USER_MODEL,
-    author = models.ForeignKey(User,
+    author = models.ForeignKey(settings.AUTH_USER_MODEL,
                                on_delete=models.CASCADE,
                                related_name="comments")
     pub_date = models.DateTimeField('Дата публикации',
