@@ -73,8 +73,7 @@ class TitlesViewSet(ModelViewSet):
             rating = obj.reviews.aggregate(Sum('score')).get('score__sum')
             obj.rating = rating
             obj.save()
-
-
+            
         page = self.paginate_queryset(queryset)
         if page is not None:
             serializer = self.get_serializer(page, many=True)
@@ -105,10 +104,6 @@ class TitlesViewSet(ModelViewSet):
         filter_kwargs = {self.lookup_field: self.kwargs[lookup_url_kwarg]}
 
         obj = get_object_or_404(queryset, **filter_kwargs)
-
-        rating = obj.reviews.aggregate(Sum('score')).get('score__sum')
-        obj.rating = rating
-        obj.save()
 
         self.check_object_permissions(self.request, obj)
 
