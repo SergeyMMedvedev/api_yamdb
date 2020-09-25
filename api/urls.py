@@ -13,6 +13,10 @@ from .views import (
     UserAPIRetrieveUpdateDestroy,
     # TestAPI,
     MeAPIRetrieveUpdate,
+    GenreAPI,
+    CategoryAPI,
+    GenreDestroyAPI,
+    CategoryDestroyAPI,
 
 )
 from django.urls import path, include
@@ -39,5 +43,9 @@ urlpatterns = [
     path('v1/users/me/', MeAPIRetrieveUpdate.as_view()),
     path('v1/users/<str:username>/', UserAPIRetrieveUpdateDestroy.as_view()),
     # path('v1/test/', TestAPI.as_view()),
+    path('v1/genres/', GenreAPI.as_view()),
+    path('v1/categories/', CategoryAPI.as_view()),
+    path('v1/genres/<slug>/', GenreDestroyAPI.as_view()),
+    path('v1/categories/<slug>/', CategoryDestroyAPI.as_view()),
 ]
 

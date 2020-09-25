@@ -57,7 +57,7 @@ class Category(models.Model):
         ordering = ["-slug"]
 
     def __str__(self):
-        return self.name
+        return self.slug
 
 
 class Title(models.Model):
@@ -66,13 +66,19 @@ class Title(models.Model):
         max_length=140, verbose_name="Название фильма"
     )
     year = models.IntegerField(
-        validators=[MinValueValidator(1984), MaxValueValidator(2030)],
+        validators=[MinValueValidator(0), MaxValueValidator(2030)],
         verbose_name="Год выпуска"
     )
     category = models.ForeignKey(
         Category, on_delete=models.SET_NULL,
         blank=True, null=True, related_name="category_title",
         verbose_name="Категория"
+    )
+    description = models.TextField(default='')
+    rating = models.IntegerField(
+        default=None,
+        blank=True,
+        null=True,
     )
 
     def __str__(self):
@@ -84,12 +90,12 @@ class Genre(models.Model):
     slug = models.SlugField(unique=True)
     title = models.ManyToManyField(Title,
                                    default=None,
-                                   related_name='genres',
+                                   related_name='genre',
                                    blank=True,
                                    )
 
     def __str__(self):
-        return self.name
+        return self.slug
 
 
 class Review(models.Model):
@@ -105,6 +111,9 @@ class Review(models.Model):
     )
     pub_date = models.DateTimeField('Дата публикации',
                                     auto_now_add=True)
+
+    def __str__(self):
+        return str(self.score)
 
 
 class Comment(models.Model):

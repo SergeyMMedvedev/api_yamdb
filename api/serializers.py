@@ -29,26 +29,47 @@ class CommentSerializer(serializers.ModelSerializer):
         fields = '__all__'
         model = Comment
 
-
-class TitlesSerializer(serializers.ModelSerializer):
-
-    class Meta:
-        fields = '__all__'
-        model = Title
-
-
 class GenreSerializer(serializers.ModelSerializer):
 
     class Meta:
-        fields = '__all__'
+        fields = ('name', 'slug')
         model = Genre
 
 
 class CategorySerializer(serializers.ModelSerializer):
 
     class Meta:
-        fields = '__all__'
+        fields = ('name', 'slug')
         model = Category
+
+
+class TitlesSerializer(serializers.ModelSerializer):
+    genre = GenreSerializer(many=True, read_only=True)
+
+    category = CategorySerializer(read_only=True, many=False)
+    rating = serializers.IntegerField(default=None)
+    class Meta:
+        fields = ('id', 'name', 'year', 'rating', 'description', 'genre', 'category')
+        model = Title
+
+
+# class TitlesRatingSerializer(serializers.Serializer):
+#     id = serializers.Field()
+#     name = serializers.CharField()
+#     year = serializers.IntegerField()
+#
+#     genre = GenreSerializer(many=True, read_only=True)
+#     rating = serializers.CharField(default=0)
+#
+#     class Meta:
+#         fields = ('id', 'name', 'year', 'category', 'genre', 'rating')
+
+
+
+
+
+
+
 
 
 class UserSerializer(serializers.ModelSerializer):

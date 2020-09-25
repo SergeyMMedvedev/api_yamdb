@@ -8,9 +8,10 @@ class CharFilterInFilter(filters.BaseInFilter, filters.CharFilter):
 class TitleFilter(filters.FilterSet):
     name = filters.CharFilter(field_name='name', lookup_expr='icontains')
     year = filters.NumberFilter()
-    category = filters.NumberFilter()
-    genres = CharFilterInFilter(field_name='genres__slug', lookup_expr='in')
+    # category = filters.NumberFilter()
+    category = CharFilterInFilter(field_name='category__slug', lookup_expr='in')
+    genre = CharFilterInFilter(field_name='genre__slug', lookup_expr='in')
 
     class Meta:
         models = Title
-        fields = ['category', 'year', 'name', 'genres']
+        fields = ['category', 'year', 'name', 'genre']
