@@ -8,26 +8,21 @@ from rest_framework_simplejwt.views import TokenObtainPairView
 from .models import User
 
 
-class ReviewSerializer(serializers.ModelSerializer):
-    author = serializers.SlugRelatedField(
-        read_only=True,
-        slug_field='username'
-    )
-
-    class Meta:
-        fields = '__all__'
-        model = Review
-
-
 class CommentSerializer(serializers.ModelSerializer):
     author = serializers.SlugRelatedField(
         read_only=True,
         slug_field='username'
     )
-
+    pub_date = serializers.DateTimeField(read_only=True)
     class Meta:
-        fields = '__all__'
+        fields = ('id', 'text', 'author', 'pub_date')
         model = Comment
+
+
+
+
+
+
 
 class GenreSerializer(serializers.ModelSerializer):
 
@@ -53,23 +48,17 @@ class TitlesSerializer(serializers.ModelSerializer):
         model = Title
 
 
-# class TitlesRatingSerializer(serializers.Serializer):
-#     id = serializers.Field()
-#     name = serializers.CharField()
-#     year = serializers.IntegerField()
-#
-#     genre = GenreSerializer(many=True, read_only=True)
-#     rating = serializers.CharField(default=0)
-#
-#     class Meta:
-#         fields = ('id', 'name', 'year', 'category', 'genre', 'rating')
-
-
-
-
-
-
-
+class ReviewSerializer(serializers.ModelSerializer):
+    author = serializers.SlugRelatedField(
+        read_only=True,
+        slug_field='username'
+    )
+    title = TitlesSerializer(read_only=True)
+    score = serializers.IntegerField(max_value=10)
+    class Meta:
+        # fields = ('id', 'text', 'author', 'score', 'pub_date')
+        fields = '__all__'
+        model = Review
 
 
 class UserSerializer(serializers.ModelSerializer):

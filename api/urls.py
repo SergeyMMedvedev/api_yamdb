@@ -28,7 +28,11 @@ router.register(r'titles/(?P<title_id>[0-9]+)/reviews',
                 ReviewViewSet, basename='reviews')
 router.register(r'titles/(?P<title_id>[0-9]+)/reviews/'
                 r'(?P<reviews_id>[0-9]+)/comments',
+                CommentViewSet, basename='comments'),
+router.register(r'categories/(?P<title_id>[0-9]+)/reviews/'
+                r'(?P<reviews_id>[0-9]+)/comments',
                 CommentViewSet, basename='comments')
+
 
 
 urlpatterns = [
@@ -45,7 +49,7 @@ urlpatterns = [
     # path('v1/test/', TestAPI.as_view()),
     path('v1/genres/', GenreAPI.as_view()),
     path('v1/categories/', CategoryAPI.as_view()),
-    path('v1/genres/<slug>/', GenreDestroyAPI.as_view()),
-    path('v1/categories/<slug>/', CategoryDestroyAPI.as_view()),
+    path('v1/genres/<slug:slug>/', GenreDestroyAPI.as_view()),
+    path('v1/categories/<slug:slug>/', CategoryDestroyAPI.as_view()),
 ]
 

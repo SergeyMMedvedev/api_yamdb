@@ -40,3 +40,31 @@ class IsAdminOrReadOnly(BasePermission):
                 return request.user.role == 'admin'
         elif request.method in ('GET'):
             return True
+
+
+class OnlyOneReview(BasePermission):
+    def has_permission(self, request, view):
+        title_id = int(request.path.split('/')[4])
+        if request.method in ('POST'):
+            reviews_title_ids = []
+            for review in request.user.reviews.all():
+                reviews_title_ids.append(review.title.id)
+            return title_id not in reviews_title_ids
+        else:
+            return True
+
+
+class IsAuthorOrReadOnlyPermission(BasePermission):
+
+    def has_object_permission(self, request, view, obj):
+        if request.method in ('DELETE', 'PUT', 'PATCH'):
+            return request.user == obj.author
+        return True
+
+
+class IsAuthorOrModeratorOrAdminOrReadOnlyPermission(BasePermission):
+
+    def has_object_permission(self, request, view, obj):
+        if request.method in ('DELETE', 'PUT', 'PATCH'):
+            return (request.user == obj.author) or (request.user.role == 'admin') or (request.user.role == 'moderator')
+        return True
