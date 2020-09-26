@@ -1,4 +1,6 @@
-from rest_framework.permissions import BasePermission
+from rest_framework.permissions import (
+    BasePermission, SAFE_METHODS
+)
 
 
 class IsNotAuth(BasePermission):
@@ -24,3 +26,28 @@ class HasDetailPermission(BasePermission):
                     or request.user.role == "admin"
                     or request.user.id == obj.author_id)
         return True
+
+
+class IsAdminOrReadOnly(BasePermission):
+    def has_object_permission(self, request, view, obj):
+        if request.method in ('DELETE', 'PUT', 'PATCH'):
+            if request.user.is_authenticated:
+                return request.user.role == 'admin'
+        else:
+            return True
+
+    def has_permission(self, request, view):
+        if request.method in ('POST', 'DELETE', 'PUT', 'PATCH'):
+            if request.user.is_authenticated:
+                return request.user.role == 'admin'
+        elif request.method in ('GET'):
+            return True
+
+
+class IsAuthorOrModeratorOrAdminOrReadOnlyPermission(BasePermission):
+
+    def has_object_permission(self, request, view, obj):
+        return request.method in SAFE_METHODS or (
+                (request.user == obj.author) or (
+                request.user.role in ('admin','moderator'))
+        )

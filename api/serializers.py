@@ -4,19 +4,7 @@ from rest_framework.validators import UniqueValidator
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 from rest_framework_simplejwt.views import TokenObtainPairView
 
-
 from .models import User
-
-
-class ReviewSerializer(serializers.ModelSerializer):
-    author = serializers.SlugRelatedField(
-        read_only=True,
-        slug_field='username'
-    )
-
-    class Meta:
-        fields = '__all__'
-        model = Review
 
 
 class CommentSerializer(serializers.ModelSerializer):
@@ -24,31 +12,49 @@ class CommentSerializer(serializers.ModelSerializer):
         read_only=True,
         slug_field='username'
     )
-
+    pub_date = serializers.DateTimeField(read_only=True)
     class Meta:
-        fields = '__all__'
+        fields = ('id', 'text', 'author', 'pub_date')
         model = Comment
-
-
-class TitlesSerializer(serializers.ModelSerializer):
-
-    class Meta:
-        fields = '__all__'
-        model = Title
 
 
 class GenreSerializer(serializers.ModelSerializer):
 
     class Meta:
-        fields = '__all__'
+        fields = ('name', 'slug')
         model = Genre
 
 
 class CategorySerializer(serializers.ModelSerializer):
 
     class Meta:
-        fields = '__all__'
+        fields = ('name', 'slug')
         model = Category
+
+
+class TitlesSerializer(serializers.ModelSerializer):
+    genre = GenreSerializer(many=True, read_only=True)
+    category = CategorySerializer(read_only=True, many=False)
+    rating = serializers.FloatField(default=None)
+
+    class Meta:
+        fields = (
+            'id', 'name', 'year', 'rating', 'description', 'genre', 'category'
+        )
+        model = Title
+
+
+class ReviewSerializer(serializers.ModelSerializer):
+    author = serializers.SlugRelatedField(
+        read_only=True,
+        slug_field='username'
+    )
+    title = TitlesSerializer(read_only=True)
+    score = serializers.IntegerField(max_value=10)
+
+    class Meta:
+        fields = '__all__'
+        model = Review
 
 
 class UserSerializer(serializers.ModelSerializer):
@@ -56,7 +62,6 @@ class UserSerializer(serializers.ModelSerializer):
         validators=[UniqueValidator(queryset=User.objects.all()), ],
         default=None,
     )
-
     email = serializers.EmailField(
         validators=[UniqueValidator(queryset=User.objects.all()), ],
     )

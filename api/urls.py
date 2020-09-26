@@ -4,16 +4,13 @@ from rest_framework_simplejwt.views import (
     TokenRefreshView,
 )
 from .views import (
-    ReviewViewSet,
-    CommentViewSet, TitlesViewSet
-    ,
+    ReviewViewSet, CommentViewSet,
+    TitlesViewSet, GenreAPIView, CategoryAPIView,
     SignupAPIView,
     ActivateAPIView,
     UserAPIListCreate,
     UserAPIRetrieveUpdateDestroy,
-    # TestAPI,
     MeAPIRetrieveUpdate,
-
 )
 from django.urls import path, include
 
@@ -24,11 +21,15 @@ router.register(r'titles/(?P<title_id>[0-9]+)/reviews',
                 ReviewViewSet, basename='reviews')
 router.register(r'titles/(?P<title_id>[0-9]+)/reviews/'
                 r'(?P<reviews_id>[0-9]+)/comments',
+                CommentViewSet, basename='comments'),
+router.register(r'categories/(?P<title_id>[0-9]+)/reviews/'
+                r'(?P<reviews_id>[0-9]+)/comments',
                 CommentViewSet, basename='comments')
-
+router.register(r'genres', GenreAPIView, basename='genres')
+router.register(r'categories', CategoryAPIView, basename='categories')
 
 urlpatterns = [
-    path('v1/', include(router.urls)),
+     path('v1/', include(router.urls)),
     path('v1/token/', TokenObtainPairView.as_view(),
          name='token_obtain_pair'),
     path('v1/token/refresh/', TokenRefreshView.as_view(),
@@ -38,6 +39,4 @@ urlpatterns = [
     path('v1/users/', UserAPIListCreate.as_view()),
     path('v1/users/me/', MeAPIRetrieveUpdate.as_view()),
     path('v1/users/<str:username>/', UserAPIRetrieveUpdateDestroy.as_view()),
-    # path('v1/test/', TestAPI.as_view()),
 ]
-
