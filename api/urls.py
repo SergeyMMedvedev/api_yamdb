@@ -27,10 +27,10 @@ router.register(r'titles', TitlesViewSet, basename='titles')
 router.register(r'titles/(?P<title_id>[0-9]+)/reviews',
                 ReviewViewSet, basename='reviews')
 router.register(r'titles/(?P<title_id>[0-9]+)/reviews/'
-                r'(?P<reviews_id>[0-9]+)/comments',
+                r'(?P<review_id>[0-9]+)/comments',
                 CommentViewSet, basename='comments'),
 router.register(r'categories/(?P<title_id>[0-9]+)/reviews/'
-                r'(?P<reviews_id>[0-9]+)/comments',
+                r'(?P<review_id>[0-9]+)/comments',
                 CommentViewSet, basename='comments')
 
 

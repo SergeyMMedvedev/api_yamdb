@@ -74,10 +74,10 @@ class CommentViewSet(ModelViewSet):
     permission_classes = [permissions.IsAuthenticatedOrReadOnly, IsAuthorOrModeratorOrAdminOrReadOnlyPermission]
 
     def perform_create(self, serializer):
-        serializer.save(author=self.request.user, review_id=self.kwargs['reviews_id'], pub_date=dt.now())
+        serializer.save(author=self.request.user, review_id=self.kwargs['review_id'], pub_date=dt.now())
 
     def get_queryset(self):
-        review = get_object_or_404(Review, id=self.kwargs['reviews_id'])
+        review = get_object_or_404(Review, id=self.kwargs['review_id'])
         return review.comments.all()
 
     def create(self, request, *args, **kwargs):
@@ -89,7 +89,7 @@ class CommentViewSet(ModelViewSet):
         return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
 
     def check_exist(self):
-        get_object_or_404(Review, id=self.kwargs['reviews_id'])
+        get_object_or_404(Review, id=self.kwargs['review_id'])
 
 
 

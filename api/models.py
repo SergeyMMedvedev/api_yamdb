@@ -61,7 +61,7 @@ class Category(models.Model):
 
 
 class Title(models.Model):
-
+    
     name = models.CharField(
         max_length=140, verbose_name="Название фильма"
     )

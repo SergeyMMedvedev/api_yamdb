@@ -1,3 +1,4 @@
+from django.shortcuts import get_object_or_404
 from rest_framework import serializers
 from .models import Review, Comment, Title, Genre, Category
 from rest_framework.validators import UniqueValidator
@@ -57,7 +58,7 @@ class ReviewSerializer(serializers.ModelSerializer):
     score = serializers.IntegerField(max_value=10)
     class Meta:
         # fields = ('id', 'text', 'author', 'score', 'pub_date')
-        fields = '__all__'
+        fields = ('id', 'title', 'text', 'author', 'pub_date', 'score')
         model = Review
 
 
