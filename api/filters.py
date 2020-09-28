@@ -9,7 +9,7 @@ class CharFilterInFilter(filters.BaseInFilter, filters.CharFilter):
 class TitleFilter(filters.FilterSet):
     name = filters.CharFilter(field_name='name', lookup_expr='icontains')
     year = filters.NumberFilter()
-    category = filters.NumberFilter()
+    category = filters.CharFilter(field_name='category__slug', lookup_expr='exact')
     genre = CharFilterInFilter(field_name='genre__slug', lookup_expr='in')
 
     class Meta:
