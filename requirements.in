@@ -7,3 +7,4 @@ djangorestframework-simplejwt
 markdown
 django-cors-headers
 django-filters
+six

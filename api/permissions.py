@@ -9,26 +9,23 @@ class IsNotAuth(BasePermission):
         return not request.user.is_authenticated
 
 
-class IsAdmin(BasePermission):
+class UsersPermission(BasePermission):
 
     def has_permission(self, request, view):
-        if request.user.is_authenticated:
-            return request.user.role == 'admin'
+        if request.method == 'DELETE' and request.path.endswith('users/me/'):
+            return True
+        elif request.user.is_authenticated:
+            if (request.method in ['PATCH', 'GET']
+                    and request.path.endswith('users/me/')):
+                return True
+            else:
+                return request.user.role == 'admin'
         else:
             return False
 
 
-class HasDetailPermission(BasePermission):
-
-    def has_object_permission(self, request, view, obj):
-        if request.method in ('DELETE', 'PUT', 'PATCH'):
-            return (request.user.role == "moderator"
-                    or request.user.role == "admin"
-                    or request.user.id == obj.author_id)
-        return True
-
-
 class IsAdminOrReadOnly(BasePermission):
+
     def has_object_permission(self, request, view, obj):
         if request.method in ('DELETE', 'PUT', 'PATCH'):
             if request.user.is_authenticated:
@@ -44,10 +41,10 @@ class IsAdminOrReadOnly(BasePermission):
             return True
 
 
-class IsAuthorOrModeratorOrAdminOrReadOnlyPermission(BasePermission):
+class IsAuthorOrModeratorOrAdminOrReadOnly(BasePermission):
 
     def has_object_permission(self, request, view, obj):
         return request.method in SAFE_METHODS or (
                 (request.user == obj.author) or (
-                request.user.role in ('admin','moderator'))
+                 request.user.role in ('admin', 'moderator'))
         )

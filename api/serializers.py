@@ -1,10 +1,12 @@
+from django.contrib.auth import get_user_model
 from rest_framework import serializers
-from .models import Review, Comment, Title, Genre, Category
 from rest_framework.validators import UniqueValidator
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 from rest_framework_simplejwt.views import TokenObtainPairView
 
-from .models import User
+from .models import Review, Comment, Title, Genre, Category
+
+User = get_user_model()
 
 
 class CommentSerializer(serializers.ModelSerializer):
@@ -82,7 +84,7 @@ class TokenSerializer(serializers.Serializer):
     token = serializers.CharField(max_length=250)
 
 
-class MyTokenObtainPairSerializer(TokenObtainPairSerializer):
+class ConformationCodeSerializer(TokenObtainPairSerializer):
     @classmethod
     def get_token(cls, user):
         token = super().get_token(user)
@@ -92,4 +94,4 @@ class MyTokenObtainPairSerializer(TokenObtainPairSerializer):
 
 
 class MyTokenObtainPairView(TokenObtainPairView):
-    serializer_class = MyTokenObtainPairSerializer
+    serializer_class = ConformationCodeSerializer

@@ -1,8 +1,11 @@
 from datetime import datetime as dt
 from django_filters.rest_framework import DjangoFilterBackend
-from django.shortcuts import get_object_or_404
+from django.shortcuts import get_object_or_404, get_list_or_404
 from django.core.mail import EmailMessage
-from rest_framework import permissions, status
+from django.contrib.auth import get_user_model
+from rest_framework import status
+from rest_framework.filters import SearchFilter
+from rest_framework.permissions import IsAuthenticatedOrReadOnly, AllowAny
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework.viewsets import ModelViewSet, generics
@@ -10,29 +13,30 @@ from rest_framework import mixins, viewsets
 from rest_framework.pagination import PageNumberPagination
 
 from .pagination import NumberPagination
-from .filters import TitleFilter, SearchFilter
-from .models import Review, User, Title, Genre, Category
+from .filters import TitleFilter
+from .models import Review, Title, Genre, Category
 from .serializers import (
     ReviewSerializer, CommentSerializer, TitlesSerializer, GenreSerializer,
     CategorySerializer, UserSerializer, TokenSerializer,
-    MyTokenObtainPairSerializer,
+    ConformationCodeSerializer,
 )
 from .permissions import (
-    IsNotAuth, IsAdmin, IsAdminOrReadOnly,
-    IsAuthorOrModeratorOrAdminOrReadOnlyPermission
+    IsNotAuth, IsAdminOrReadOnly,
+    IsAuthorOrModeratorOrAdminOrReadOnly, UsersPermission
 )
-from .api_tokens import TokenGenerator
+from .conformation_code import ConformationCodeGenerator
 from django.db.models import Avg
 
-account_activation_token = TokenGenerator()
+conformation_code_generator = ConformationCodeGenerator()
+User = get_user_model()
 
 
 class ReviewViewSet(ModelViewSet):
     """Create, get, update reviews"""
     queryset = Review.objects.all()
     serializer_class = ReviewSerializer
-    permission_classes = [permissions.IsAuthenticatedOrReadOnly,
-                          IsAuthorOrModeratorOrAdminOrReadOnlyPermission]
+    permission_classes = [IsAuthenticatedOrReadOnly,
+                          IsAuthorOrModeratorOrAdminOrReadOnly]
 
     def perform_create(self, serializer):
         title = get_object_or_404(Title, pk=self.kwargs['title_id'])
@@ -69,19 +73,18 @@ class ReviewViewSet(ModelViewSet):
 class CommentViewSet(ModelViewSet):
     """Create, get, update comments for reviews"""
     serializer_class = CommentSerializer
-    permission_classes = [permissions.IsAuthenticatedOrReadOnly,
-                          IsAuthorOrModeratorOrAdminOrReadOnlyPermission]
+    permission_classes = [IsAuthenticatedOrReadOnly,
+                          IsAuthorOrModeratorOrAdminOrReadOnly]
 
     def perform_create(self, serializer):
         serializer.save(
             author=self.request.user,
-            review_id=self.kwargs['reviews_id'],
+            review_id=self.kwargs['review_id'],
             pub_date=dt.now()
         )
 
     def get_queryset(self):
-        review = get_object_or_404(Review, id=self.kwargs['reviews_id'])
-
+        review = get_object_or_404(Review, id=self.kwargs['review_id'])
         return review.comments.all()
 
     def create(self, request, *args, **kwargs):
@@ -96,14 +99,14 @@ class CommentViewSet(ModelViewSet):
         )
 
     def check_exist(self):
-        get_object_or_404(Review, id=self.kwargs['reviews_id'])
+        get_object_or_404(Review, id=self.kwargs['review_id'])
 
 
 class TitlesViewSet(ModelViewSet):
     queryset = Title.objects.all()
     serializer_class = TitlesSerializer
     pagination_class = PageNumberPagination
-    permission_classes = [IsAdminOrReadOnly,]
+    permission_classes = [IsAdminOrReadOnly]
     filter_backends = [DjangoFilterBackend]
     filterset_class = TitleFilter
 
@@ -135,20 +138,18 @@ class TitlesViewSet(ModelViewSet):
         serializer.save(genre=genre, category=category)
 
     def perform_update(self, serializer):
-        ### TODO улучшить
         slug_genre = self.request.data.get('genre')
         slug_category = self.request.data.get('category')
-        if slug_genre or slug_category:
-            if slug_genre and slug_category:
-                genre = Genre.objects.filter(slug__in=slug_genre)
-                category = get_object_or_404(Category, slug=slug_category)
-                serializer.save(genre=genre, category=category)
-            elif slug_genre:
-                genre = Genre.objects.filter(slug__in=slug_genre)
-                serializer.save(genre=genre)
-            elif slug_category:
-                category = get_object_or_404(Category, slug=slug_category)
-                serializer.save(category=category)
+        if slug_genre and slug_category:
+            genre = Genre.objects.filter(slug__in=slug_genre)
+            category = get_object_or_404(Category, slug=slug_category)
+            serializer.save(genre=genre, category=category)
+        elif slug_genre:
+            genre = get_list_or_404(Genre, slug__in=slug_genre)
+            serializer.save(genre=genre)
+        elif slug_category:
+            category = get_object_or_404(Category, slug=slug_category)
+            serializer.save(category=category)
         else:
             serializer.save()
 
@@ -216,7 +217,8 @@ class SignupAPIView(APIView):
                 user.is_active = False
                 user.set_unusable_password()
                 user.save()
-                confirmation_code = account_activation_token.make_token(user)
+                confirmation_code = conformation_code_generator.make_token(
+                    user)
                 mail_subject = 'Activate your account.'
                 message = (f"Hello, your confirmation_code: "
                            f"{confirmation_code}")
@@ -232,48 +234,50 @@ class SignupAPIView(APIView):
 
 
 class ActivateAPIView(APIView):
-    permission_classes = [permissions.AllowAny]
+    permission_classes = [AllowAny]
 
     def post(self, request):
         user = User.objects.get(email=request.data.get('email'))
-        if account_activation_token.check_token(user,
-                                                request.data.get(
+        if conformation_code_generator.check_token(user,
+                                                   request.data.get(
                                                     'confirmation_code')):
             user.is_active = True
-            user.set_password('serg112345')
             user.save()
             data = {
-                'token': str(MyTokenObtainPairSerializer.get_token(user))
+                'token': str(ConformationCodeSerializer.get_token(user))
             }
             serializer = TokenSerializer(data)
             return Response(serializer.data, status=status.HTTP_200_OK)
         return Response(status=status.HTTP_400_BAD_REQUEST)
 
 
-class UserAPIListCreate(generics.ListCreateAPIView):
+class UserViewSet(viewsets.ViewSetMixin,
+                  generics.ListCreateAPIView,
+                  generics.RetrieveUpdateDestroyAPIView):
+    lookup_field = 'username'
     queryset = User.objects.all()
     serializer_class = UserSerializer
-    permission_classes = [IsAdmin, permissions.IsAuthenticated]
+    permission_classes = [UsersPermission]
     pagination_class = PageNumberPagination
 
-
-class UserAPIRetrieveUpdateDestroy(generics.RetrieveUpdateDestroyAPIView):
-    queryset = User.objects.all()
-    serializer_class = UserSerializer
-    permission_classes = [IsAdmin, permissions.IsAuthenticated]
-
     def get_object(self):
-        user = get_object_or_404(
-            self.queryset, username=self.kwargs.get('username')
-        )
+        if self.kwargs.get('username') == 'me':
+            user = self.request.user
+        else:
+            user = get_object_or_404(
+                self.queryset, username=self.kwargs.get('username')
+            )
         return user
 
+    def partial_update(self, request, *args, **kwargs):
+        kwargs['partial'] = True
+        if request.data.get('password'):
+            request.user.set_password(request.data.get('password'))
+        return self.update(request, *args, **kwargs)
 
-class MeAPIRetrieveUpdate(generics.RetrieveUpdateAPIView):
-    queryset = User.objects.all()
-    serializer_class = UserSerializer
-    permission_classes = [permissions.IsAuthenticated, ]
-
-    def get_object(self):
-        user = self.request.user
-        return user
+    def destroy(self, request, *args, **kwargs):
+        if request.path.endswith('users/me/'):
+            return Response(status=status.HTTP_405_METHOD_NOT_ALLOWED)
+        instance = self.get_object()
+        self.perform_destroy(instance)
+        return Response(status=status.HTTP_204_NO_CONTENT)

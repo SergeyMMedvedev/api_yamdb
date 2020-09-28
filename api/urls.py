@@ -8,9 +8,7 @@ from .views import (
     TitlesViewSet, GenreAPIView, CategoryAPIView,
     SignupAPIView,
     ActivateAPIView,
-    UserAPIListCreate,
-    UserAPIRetrieveUpdateDestroy,
-    MeAPIRetrieveUpdate,
+    UserViewSet,
 )
 from django.urls import path, include
 
@@ -20,13 +18,12 @@ router.register(r'titles', TitlesViewSet, basename='titles')
 router.register(r'titles/(?P<title_id>[0-9]+)/reviews',
                 ReviewViewSet, basename='reviews')
 router.register(r'titles/(?P<title_id>[0-9]+)/reviews/'
-                r'(?P<reviews_id>[0-9]+)/comments',
+                r'(?P<review_id>[0-9]+)/comments',
                 CommentViewSet, basename='comments'),
-router.register(r'categories/(?P<title_id>[0-9]+)/reviews/'
-                r'(?P<reviews_id>[0-9]+)/comments',
-                CommentViewSet, basename='comments')
 router.register(r'genres', GenreAPIView, basename='genres')
 router.register(r'categories', CategoryAPIView, basename='categories')
+router.register(r'users', UserViewSet, basename='users',)
+
 
 urlpatterns = [
      path('v1/', include(router.urls)),
@@ -36,7 +33,4 @@ urlpatterns = [
          name='token_refresh'),
     path('v1/auth/email/', SignupAPIView.as_view()),
     path('v1/auth/token/', ActivateAPIView.as_view()),
-    path('v1/users/', UserAPIListCreate.as_view()),
-    path('v1/users/me/', MeAPIRetrieveUpdate.as_view()),
-    path('v1/users/<str:username>/', UserAPIRetrieveUpdateDestroy.as_view()),
 ]

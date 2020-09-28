@@ -1,6 +1,6 @@
 from django_filters import rest_framework as filters
 from .models import Title
-from rest_framework.filters import SearchFilter
+
 
 class CharFilterInFilter(filters.BaseInFilter, filters.CharFilter):
     pass
