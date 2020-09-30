@@ -1,5 +1,5 @@
 from django.contrib import admin
-from . import models
+from django.apps import apps
 
 
 class CategoryAdmin(admin.ModelAdmin):
@@ -7,15 +7,9 @@ class CategoryAdmin(admin.ModelAdmin):
     empty_value_display = '-пусто-'
 
 
-admin.site.register(models.Category, CategoryAdmin)
-
-
 class GenreAdmin(admin.ModelAdmin):
     list_display = ('pk', 'name', 'slug')
     empty_value_display = '-пусто-'
-
-
-admin.site.register(models.Genre, GenreAdmin)
 
 
 class TitleAdmin(admin.ModelAdmin):
@@ -23,15 +17,9 @@ class TitleAdmin(admin.ModelAdmin):
     empty_value_display = '-пусто-'
 
 
-admin.site.register(models.Title, TitleAdmin)
-
-
 class ReviewAdmin(admin.ModelAdmin):
     list_display = ('pk', 'title', 'text', 'author', 'score', 'pub_date')
     empty_value_display = '-пусто-'
-
-
-admin.site.register(models.Review, ReviewAdmin)
 
 
 class CommentAdmin(admin.ModelAdmin):
@@ -39,7 +27,16 @@ class CommentAdmin(admin.ModelAdmin):
     empty_value_display = '-пусто-'
 
 
-admin.site.register(models.Comment, CommentAdmin)
+class ListAdminMixin(object):
+    def __init__(self, model, admin_site):
+        self.list_display = [field.name for field in model._meta.fields]
+        super(ListAdminMixin, self).__init__(model, admin_site)
 
 
-
+models = apps.get_models()
+for model in models:
+    admin_class = type('AdminClass', (ListAdminMixin, admin.ModelAdmin), {})
+    try:
+        admin.site.register(model, admin_class)
+    except admin.sites.AlreadyRegistered:
+        print(admin.sites.AlreadyRegistered)

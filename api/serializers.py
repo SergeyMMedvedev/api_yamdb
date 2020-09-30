@@ -15,6 +15,7 @@ class CommentSerializer(serializers.ModelSerializer):
         slug_field='username'
     )
     pub_date = serializers.DateTimeField(read_only=True)
+
     class Meta:
         fields = ('id', 'text', 'author', 'pub_date')
         model = Comment
@@ -34,10 +35,15 @@ class CategorySerializer(serializers.ModelSerializer):
         model = Category
 
 
+class RoundingDecimalField(serializers.DecimalField):
+    def validate_precision(self, value):
+        return value
+
+
 class TitlesSerializer(serializers.ModelSerializer):
     genre = GenreSerializer(many=True, read_only=True)
     category = CategorySerializer(read_only=True, many=False)
-    rating = serializers.FloatField(default=None)
+    rating = RoundingDecimalField(max_digits=21, decimal_places=2, coerce_to_string=False, default=0, read_only=True)
 
     class Meta:
         fields = (
@@ -53,6 +59,17 @@ class ReviewSerializer(serializers.ModelSerializer):
     )
     title = TitlesSerializer(read_only=True)
     score = serializers.IntegerField(max_value=10)
+
+    def validate(self, attrs):
+        if self.context.get('request').method == 'POST':
+            title_id = self.context.get('title').id
+            reviews = self.context.get('request').user.reviews.all()
+            reviews_id_of_current_author = []
+            for review in reviews:
+                reviews_id_of_current_author.append(review.title.id)
+            if title_id in reviews_id_of_current_author:
+                raise serializers.ValidationError("Only one review allowed")
+        return attrs
 
     class Meta:
         fields = '__all__'
@@ -84,7 +101,7 @@ class TokenSerializer(serializers.Serializer):
     token = serializers.CharField(max_length=250)
 
 
-class ConformationCodeSerializer(TokenObtainPairSerializer):
+class ConfirmationCodeSerializer(TokenObtainPairSerializer):
     @classmethod
     def get_token(cls, user):
         token = super().get_token(user)
@@ -94,4 +111,4 @@ class ConformationCodeSerializer(TokenObtainPairSerializer):
 
 
 class MyTokenObtainPairView(TokenObtainPairView):
-    serializer_class = ConformationCodeSerializer
+    serializer_class = ConfirmationCodeSerializer

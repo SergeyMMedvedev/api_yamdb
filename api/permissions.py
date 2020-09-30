@@ -9,19 +9,10 @@ class IsNotAuth(BasePermission):
         return not request.user.is_authenticated
 
 
-class UsersPermission(BasePermission):
-
+class IsAdmin(BasePermission):
     def has_permission(self, request, view):
-        if request.method == 'DELETE' and request.path.endswith('users/me/'):
-            return True
-        elif request.user.is_authenticated:
-            if (request.method in ['PATCH', 'GET']
-                    and request.path.endswith('users/me/')):
-                return True
-            else:
-                return request.user.role == 'admin'
-        else:
-            return False
+        if request.user.is_authenticated:
+            return request.user.role == 'admin'
 
 
 class IsAdminOrReadOnly(BasePermission):
@@ -34,10 +25,9 @@ class IsAdminOrReadOnly(BasePermission):
             return True
 
     def has_permission(self, request, view):
-        if request.method in ('POST', 'DELETE', 'PUT', 'PATCH'):
-            if request.user.is_authenticated:
-                return request.user.role == 'admin'
-        elif request.method in ('GET'):
+        if (request.method in SAFE_METHODS
+                or (request.user.is_authenticated
+                    and request.user.role == 'admin')):
             return True
 
 
