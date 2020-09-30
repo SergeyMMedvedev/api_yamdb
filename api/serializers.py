@@ -43,7 +43,10 @@ class RoundingDecimalField(serializers.DecimalField):
 class TitlesSerializer(serializers.ModelSerializer):
     genre = GenreSerializer(many=True, read_only=True)
     category = CategorySerializer(read_only=True, many=False)
-    rating = RoundingDecimalField(max_digits=21, decimal_places=2, coerce_to_string=False, default=0, read_only=True)
+    rating = RoundingDecimalField(
+        max_digits=21, decimal_places=2, coerce_to_string=False, default=0,
+        read_only=True
+    )
 
     class Meta:
         fields = (
@@ -86,14 +89,8 @@ class UserSerializer(serializers.ModelSerializer):
     )
 
     class Meta:
-        fields = (
-                  'first_name',
-                  'last_name',
-                  'username',
-                  'bio',
-                  'email',
-                  'role',
-                  )
+        fields = ('first_name', 'last_name',
+                  'username', 'bio', 'email', 'role',)
         model = User
 
 

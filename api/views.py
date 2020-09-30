@@ -6,9 +6,6 @@ from django.contrib.auth import get_user_model
 from rest_framework import status
 from rest_framework.decorators import api_view, permission_classes, action
 from rest_framework.filters import SearchFilter
-from rest_framework.permissions import (IsAuthenticatedOrReadOnly,
-                                        AllowAny,
-                                        IsAuthenticated)
 from rest_framework.response import Response
 from rest_framework.viewsets import ModelViewSet, generics
 from rest_framework import mixins, viewsets
@@ -24,7 +21,11 @@ from .serializers import (
 )
 from .permissions import (
     IsNotAuth, IsAdminOrReadOnly,
-    IsAuthorOrModeratorOrAdminOrReadOnly, IsAdmin
+    IsAuthorOrModeratorOrAdminOrReadOnly,
+    IsAdmin,
+    IsAuthenticatedOrReadOnly,
+    AllowAny,
+    IsAuthenticated
 )
 from .confirmation_code import ConfirmationCodeGenerator
 from django.db.models import Avg
