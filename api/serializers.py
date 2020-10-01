@@ -71,7 +71,7 @@ class ReviewSerializer(serializers.ModelSerializer):
             for review in reviews:
                 reviews_id_of_current_author.append(review.title.id)
             if title_id in reviews_id_of_current_author:
-                raise serializers.ValidationError("Only one review allowed")
+                raise serializers.ValidationError('Only one review allowed')
         return attrs
 
     class Meta:

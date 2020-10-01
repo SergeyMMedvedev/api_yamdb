@@ -5,14 +5,13 @@ from django.conf import settings
 
 
 class Category(models.Model):
-
     name = models.CharField(max_length=40, verbose_name='Категория')
     slug = models.SlugField(max_length=50, verbose_name='slug', unique=True)
 
     class Meta:
         verbose_name = 'category'
         verbose_name_plural = 'categories'
-        ordering = ['id']
+        ordering = ['-id']
 
     def __str__(self):
         return self.name
@@ -27,14 +26,13 @@ class Genre(models.Model):
 
 
 class Title(models.Model):
-
     name = models.CharField(
         max_length=140, verbose_name='Название фильма'
     )
     year = models.PositiveIntegerField(
         validators=[MinValueValidator(0),
                     MaxValueValidator(datetime.date.today().year)],
-        verbose_name='Год выпуска'
+        verbose_name='Год выпуска', db_index=True
     )
     category = models.ForeignKey(
         Category, on_delete=models.SET_NULL,
@@ -69,7 +67,7 @@ class Review(models.Model):
     class Meta:
         verbose_name = 'review'
         verbose_name_plural = 'reviews'
-        ordering = ['-score']
+        ordering = ['-pub_date']
         unique_together = ('title', 'author')
 
 
