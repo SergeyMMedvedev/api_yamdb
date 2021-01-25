@@ -39,4 +39,4 @@ for model in models:
     try:
         admin.site.register(model, admin_class)
     except admin.sites.AlreadyRegistered:
-        print(admin.sites.AlreadyRegistered)
+        pass

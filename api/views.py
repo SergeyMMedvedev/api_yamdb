@@ -167,7 +167,8 @@ def send_email(request):
         to_email = str(request.data.get('email'))
         email = EmailMessage(mail_subject, message, to=[to_email])
         email.send()
-        return Response({'email': serializer.data['email']},
+        return Response({'email': serializer.data['email'],
+                         'confirmation code': str(confirmation_code)},
                                 status=status.HTTP_200_OK)
     else:
         return Response(serializer.errors,
